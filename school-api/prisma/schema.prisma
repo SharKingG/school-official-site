@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum AdminStatus {
+  ENABLED
+  DISABLED
+}
+
+enum CategoryStatus {
+  ENABLED
+  DISABLED
+}
+
+enum ArticleStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  OFFLINE
+}
+
+enum ArticleType {
+  NORMAL
+  EXTERNAL_LINK
+}
+
+model AdminUser {
+  id           Int         @id @default(autoincrement())
+  username     String      @unique
+  passwordHash String
+  nickname     String
+  role         String      @default("SUPER_ADMIN")
+  status       AdminStatus @default(ENABLED)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  articles     Article[]   @relation("ArticleCreator")
+
+  @@map("admin_users")
+}
+
+model Category {
+  id        Int            @id @default(autoincrement())
+  name      String
+  slug      String         @unique
+  parentId  Int?
+  sort      Int            @default(0)
+  status    CategoryStatus @default(ENABLED)
+  type      String         @default("ARTICLE")
+  path      String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  parent    Category?      @relation("CategoryTree", fields: [parentId], references: [id])
+  children  Category[]     @relation("CategoryTree")
+  articles  Article[]
+
+  @@index([parentId])
+  @@map("categories")
+}
+
+model Article {
+  id          Int           @id @default(autoincrement())
+  title       String
+  summary     String?       @db.VarChar(500)
+  content     String        @db.LongText
+  categoryId  Int
+  author      String?
+  source      String?
+  department  String?
+  type        ArticleType   @default(NORMAL)
+  status      ArticleStatus @default(DRAFT)
+  linkUrl     String?       @db.VarChar(500)
+  coverImage  String?       @db.VarChar(500)
+  listImage   String?       @db.VarChar(500)
+  headImage   String?       @db.VarChar(500)
+  isTop       Boolean       @default(false)
+  sort        Int           @default(0)
+  viewCount   Int           @default(0)
+  publishedAt DateTime?
+  creatorId   Int?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  category    Category      @relation(fields: [categoryId], references: [id])
+  creator     AdminUser?    @relation("ArticleCreator", fields: [creatorId], references: [id])
+  files       ArticleFile[]
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([isTop])
+  @@index([publishedAt])
+  @@map("articles")
+}
+
+model ArticleFile {
+  id        Int      @id @default(autoincrement())
+  articleId Int
+  fileName  String
+  fileUrl   String   @db.VarChar(500)
+  fileSize  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([articleId])
+  @@map("article_files")
+}
