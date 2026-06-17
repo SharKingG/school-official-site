@@ -42,3 +42,21 @@ export_presets.cfg
 
 # OS and package cache
 .cache
+
+# local backups
+backup-*
+backup-school-*
+school-web-stage*.zip
+school-admin-stage*.zip
+school-api-stage*.zip
+
+# environment files
+.env
+.env.*
+!.env.example
+
+# dependencies and build outputs
+node_modules
+.nuxt
+.output
+dist

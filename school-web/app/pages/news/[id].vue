@@ -1,22 +1,39 @@
 <script setup lang="ts">
-import { articles, getArticleById } from '~/data/news'
 import { siteConfig } from '~/data/site'
+import {
+  fetchArticleDetail,
+  fetchRelatedArticles,
+  type NewsArticle
+} from '~/api/cms'
 
 const route = useRoute()
 
-const article = computed(() => getArticleById(String(route.params.id)))
+const { data: detailData, pending } = await useAsyncData(
+  `article-detail-${route.params.id}`,
+  async () => {
+    try {
+      const article = await fetchArticleDetail(String(route.params.id))
+      const relatedArticles = await fetchRelatedArticles(article, 4)
 
-const relatedArticles = computed(() => {
-  const current = article.value
-
-  if (!current) {
-    return []
+      return {
+        errorMessage: '',
+        article,
+        relatedArticles
+      }
+    } catch (error: any) {
+      return {
+        errorMessage:
+          error?.message || '无法连接 school-api，请确认后端服务已经启动。',
+        article: null as NewsArticle | null,
+        relatedArticles: [] as NewsArticle[]
+      }
+    }
   }
+)
 
-  return articles
-    .filter((item) => item.category === current.category && item.id !== current.id)
-    .slice(0, 4)
-})
+const article = computed(() => detailData.value?.article || null)
+const relatedArticles = computed(() => detailData.value?.relatedArticles || [])
+const errorMessage = computed(() => detailData.value?.errorMessage || '')
 
 useHead(() => ({
   title: article.value
@@ -28,7 +45,12 @@ useHead(() => ({
 <template>
   <main class="page-main">
     <section class="container article-layout">
-      <article v-if="article" class="article-detail">
+      <article v-if="pending" class="article-detail">
+        <h2>正在加载文章...</h2>
+        <p>正在从 school-api 获取文章详情。</p>
+      </article>
+
+      <article v-else-if="article" class="article-detail">
         <div class="breadcrumb">
           <NuxtLink to="/">首页</NuxtLink>
           <span>/</span>
@@ -44,12 +66,14 @@ useHead(() => ({
         <div class="article-meta">
           <span>栏目：{{ article.categoryName }}</span>
           <span>发布日期：{{ article.date }}</span>
+          <span v-if="article.author">作者：{{ article.author }}</span>
+          <span v-if="article.viewCount !== undefined">浏览：{{ article.viewCount }}</span>
         </div>
 
         <img
-          v-if="article.cover"
+          v-if="article.headImage || article.cover"
           class="article-cover"
-          :src="article.cover"
+          :src="article.headImage || article.cover"
           :alt="article.title"
         />
 
@@ -63,8 +87,9 @@ useHead(() => ({
       </article>
 
       <article v-else class="article-detail">
-        <h2>文章不存在</h2>
-        <p>你访问的文章不存在或已被删除。</p>
+        <h2>文章不存在或接口连接失败</h2>
+        <p v-if="errorMessage" class="article-summary">{{ errorMessage }}</p>
+        <p v-else>你访问的文章不存在或已被删除。</p>
         <NuxtLink to="/news" class="back-link">返回新闻列表</NuxtLink>
       </article>
 
@@ -79,6 +104,10 @@ useHead(() => ({
           <strong>{{ item.title }}</strong>
           <span>{{ item.date.slice(5) }}</span>
         </NuxtLink>
+
+        <p v-if="relatedArticles.length === 0" class="side-empty">
+          暂无相关推荐
+        </p>
       </aside>
     </section>
   </main>

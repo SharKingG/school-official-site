@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { NewsArticle } from '~/data/news'
+import type { NewsArticle } from '~/api/cms'
 
 withDefaults(
   defineProps<{

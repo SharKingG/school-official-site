@@ -2,6 +2,11 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   compatibilityDate: '2026-06-16',
   css: ['~/assets/styles/main.css'],
+  runtimeConfig: {
+    public: {
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:3001/api'
+    }
+  },
   app: {
     head: {
       htmlAttrs: {

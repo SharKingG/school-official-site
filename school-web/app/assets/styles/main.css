@@ -975,3 +975,70 @@ input {
     height: 44px;
   }
 }
+
+/* Stage 7: API loading/error states */
+.api-alert {
+  margin-top: 24px;
+  margin-bottom: 24px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: #fff7e6;
+  border: 1px solid #ffd591;
+  color: #8a4b00;
+  line-height: 1.7;
+}
+
+.api-alert strong {
+  margin-right: 6px;
+}
+
+.loading-card,
+.empty-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px;
+  margin-bottom: 24px;
+  color: #666;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.empty-card {
+  text-align: center;
+}
+
+.pager {
+  margin-top: 24px;
+  padding: 18px;
+  background: #fff;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.pager a {
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #c60000;
+  color: #fff;
+  font-weight: 700;
+}
+
+.pager span {
+  color: #666;
+}
+
+.side-empty {
+  margin: 0;
+  padding: 14px 0;
+  color: #999;
+  border-top: 1px solid #eee;
+}
+
+@media (max-width: 640px) {
+  .pager {
+    flex-direction: column;
+  }
+}
