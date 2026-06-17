@@ -1,289 +1,210 @@
-const API_BASE_URL = "http://127.0.0.1:3001/api";
+const API_BASE_URL = 'http://127.0.0.1:3001/api'
+const API_ORIGIN = 'http://127.0.0.1:3001'
 
 export interface ApiPagination {
-  page: number;
-  pageSize: number;
-  total: number;
-  totalPages: number;
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
 }
 
 export interface NewsCategoryOption {
-  key: string;
-  label: string;
-  id?: number;
+  key: string
+  label: string
+  id?: number
 }
 
 export interface NewsArticle {
-  id: string;
-  title: string;
-  date: string;
-  category: string;
-  categoryName: string;
-  categoryId?: number;
-  summary: string;
-  content: string[];
-  cover?: string;
-  listImage?: string;
-  headImage?: string;
-  author?: string;
-  source?: string;
-  department?: string;
-  isTop?: boolean;
-  viewCount?: number;
-  linkUrl?: string;
-  status?: string;
+  id: string
+  title: string
+  date: string
+  category: string
+  categoryName: string
+  categoryId?: number
+  summary: string
+  content: string[]
+  cover?: string
+  listImage?: string
+  headImage?: string
+  author?: string
+  source?: string
+  department?: string
+  isTop?: boolean
+  viewCount?: number
+  linkUrl?: string
+  status?: string
 }
 
 export interface ArticleListQuery {
-  page?: number;
-  pageSize?: number;
-  keyword?: string;
-  categoryId?: number;
-  category?: string;
-  status?: string;
-  isTop?: boolean;
+  page?: number
+  pageSize?: number
+  keyword?: string
+  categoryId?: number
+  category?: string
+  status?: string
+  isTop?: boolean
 }
 
 export interface ArticleListResult {
-  list: NewsArticle[];
-  pagination: ApiPagination;
+  list: NewsArticle[]
+  pagination: ApiPagination
+}
+
+export interface CmsBanner {
+  id: number
+  title: string
+  subtitle?: string
+  imageUrl: string
+  linkUrl?: string
+  position: string
+  size?: string
+  sort?: number
+  status?: string
+}
+
+export interface CmsLink {
+  id: number
+  name: string
+  url: string
+  category: string
+  type: string
+  openTarget: string
+  icon?: string
+  sort?: number
+  status?: string
+}
+
+export interface CmsLeader {
+  id: number
+  name: string
+  title: string
+  photo?: string
+  intro?: string
+  sort?: number
+  status?: string
 }
 
 interface RawCategory {
-  id?: number;
-  name?: string;
-  slug?: string;
-  parentId?: number | null;
-  sort?: number;
-  status?: string;
-  children?: RawCategory[];
+  id?: number
+  name?: string
+  slug?: string
+  parentId?: number | null
+  sort?: number
+  status?: string
+  children?: RawCategory[]
 }
 
 interface RawArticle {
-  id?: number;
-  title?: string;
-  summary?: string | null;
-  content?: string | null;
-  categoryId?: number;
-  author?: string | null;
-  source?: string | null;
-  department?: string | null;
-  type?: string;
-  status?: string;
-  linkUrl?: string | null;
-  coverImage?: string | null;
-  listImage?: string | null;
-  headImage?: string | null;
-  isTop?: boolean;
-  sort?: number;
-  viewCount?: number;
-  publishedAt?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
-  category?: {
-    id?: number;
-    name?: string;
-    slug?: string;
-  } | null;
+  id?: number
+  title?: string
+  summary?: string | null
+  content?: string | null
+  categoryId?: number
+  author?: string | null
+  source?: string | null
+  department?: string | null
+  type?: string
+  status?: string
+  linkUrl?: string | null
+  coverImage?: string | null
+  listImage?: string | null
+  headImage?: string | null
+  isTop?: boolean
+  sort?: number
+  viewCount?: number
+  publishedAt?: string | null
+  createdAt?: string
+  updatedAt?: string
+  category?: { id?: number; name?: string; slug?: string } | null
 }
 
 function buildUrl(path: string, query: Record<string, any> = {}) {
-  const url = new URL(
-    `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`,
-  );
-
+  const url = new URL(`${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`)
   Object.entries(query).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== "") {
-      url.searchParams.set(key, String(value));
+    if (value !== undefined && value !== null && value !== '') {
+      url.searchParams.set(key, String(value))
     }
-  });
-
-  return url.toString();
+  })
+  return url.toString()
 }
 
 function unwrapResponse(result: any) {
-  if (
-    result &&
-    typeof result === "object" &&
-    "code" in result &&
-    "data" in result
-  ) {
-    if (result.code === 0) {
-      return result.data;
-    }
-
-    throw new Error(result.message || "接口请求失败");
+  if (result && typeof result === 'object' && 'code' in result && 'data' in result) {
+    if (result.code === 0) return result.data
+    throw new Error(result.message || '接口请求失败')
   }
-
-  return result;
+  return result
 }
 
 async function apiGet(path: string, query: Record<string, any> = {}) {
-  const url = buildUrl(path, query);
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`接口请求失败：${response.status} ${response.statusText}`);
-  }
-
-  const result = await response.json();
-  return unwrapResponse(result);
+  const response = await fetch(buildUrl(path, query), { method: 'GET', headers: { Accept: 'application/json' } })
+  if (!response.ok) throw new Error(`接口请求失败：${response.status} ${response.statusText}`)
+  const result = await response.json()
+  return unwrapResponse(result)
 }
 
 function emptyPagination(page = 1, pageSize = 10): ApiPagination {
-  return {
-    page,
-    pageSize,
-    total: 0,
-    totalPages: 0,
-  };
+  return { page, pageSize, total: 0, totalPages: 0 }
 }
 
-function normalizePagination(
-  data: any,
-  page = 1,
-  pageSize = 10,
-  listLength = 0,
-): ApiPagination {
-  const pagination = data?.pagination || data?.pageInfo || data?.pager || {};
-
-  const total = Number(
-    pagination.total ?? data?.total ?? data?.count ?? listLength ?? 0,
-  );
-
-  const currentPage = Number(
-    pagination.page ?? pagination.current ?? data?.page ?? page,
-  );
-
-  const currentPageSize = Number(
-    pagination.pageSize ?? pagination.size ?? data?.pageSize ?? pageSize,
-  );
-
-  const totalPages = Number(
-    pagination.totalPages ??
-      pagination.pages ??
-      Math.ceil(total / Math.max(currentPageSize, 1)),
-  );
-
-  return {
-    page: currentPage,
-    pageSize: currentPageSize,
-    total,
-    totalPages,
-  };
+function normalizePagination(data: any, page = 1, pageSize = 10, listLength = 0): ApiPagination {
+  const pagination = data?.pagination || data?.pageInfo || data?.pager || {}
+  const total = Number(pagination.total ?? data?.total ?? data?.count ?? listLength ?? 0)
+  const currentPage = Number(pagination.page ?? pagination.current ?? data?.page ?? page)
+  const currentPageSize = Number(pagination.pageSize ?? pagination.size ?? data?.pageSize ?? pageSize)
+  const totalPages = Number(pagination.totalPages ?? pagination.pages ?? Math.ceil(total / Math.max(currentPageSize, 1)))
+  return { page: currentPage, pageSize: currentPageSize, total, totalPages }
 }
 
 function pickArticleList(data: any) {
   if (Array.isArray(data)) {
-    return {
-      rawList: data,
-      pagination: normalizePagination({}, 1, data.length || 10, data.length),
-    };
+    return { rawList: data, pagination: normalizePagination({}, 1, data.length || 10, data.length) }
   }
-
-  const rawList =
-    data?.list ||
-    data?.items ||
-    data?.records ||
-    data?.rows ||
-    data?.data ||
-    [];
-
-  const safeList = Array.isArray(rawList) ? rawList : [];
-
-  return {
-    rawList: safeList,
-    pagination: normalizePagination(
-      data,
-      data?.page || 1,
-      data?.pageSize || 10,
-      safeList.length,
-    ),
-  };
+  const rawList = data?.list || data?.items || data?.records || data?.rows || data?.data || []
+  const safeList = Array.isArray(rawList) ? rawList : []
+  return { rawList: safeList, pagination: normalizePagination(data, data?.page || 1, data?.pageSize || 10, safeList.length) }
 }
 
 function formatArticleDate(value?: string | null) {
-  if (!value) {
-    return "";
-  }
-
-  const text = String(value);
-
-  if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
-    return text.slice(0, 10);
-  }
-
-  const date = new Date(text);
-
-  if (Number.isNaN(date.getTime())) {
-    return text.slice(0, 10);
-  }
-
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
+  if (!value) return ''
+  const text = String(value)
+  if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.slice(0, 10)
+  const date = new Date(text)
+  if (Number.isNaN(date.getTime())) return text.slice(0, 10)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 function splitContent(content?: string | null) {
-  if (!content) {
-    return [];
-  }
-
-  return String(content)
-    .split(/\n{1,}/)
-    .map((item) => item.trim())
-    .filter(Boolean);
+  if (!content) return []
+  return String(content).split(/\n{1,}/).map((item) => item.trim()).filter(Boolean)
 }
 
 export function resolveImageUrl(url?: string | null) {
-  if (!url) {
-    return "/images/feature-news.svg";
-  }
-
-  if (/^https?:\/\//i.test(url)) {
-    return url;
-  }
-
-  if (url.startsWith("/images/")) {
-    return url;
-  }
-
-  if (url.startsWith("/uploads/")) {
-    return `http://127.0.0.1:3001${url}`;
-  }
-
-  if (url.startsWith("/")) {
-    return url;
-  }
-
-  return `/${url}`;
+  if (!url) return '/images/feature-news.svg'
+  if (/^https?:\/\//i.test(url)) return url
+  if (url.startsWith('/images/')) return url
+  if (url.startsWith('/uploads/')) return `${API_ORIGIN}${url}`
+  if (url.startsWith('/')) return url
+  return `/${url}`
 }
 
 function normalizeArticle(article: RawArticle): NewsArticle {
-  const categoryId = article.categoryId || article.category?.id;
-  const categorySlug = article.category?.slug || String(categoryId || "");
-  const categoryName = article.category?.name || "未分类";
-
+  const categoryId = article.categoryId || article.category?.id
+  const categorySlug = article.category?.slug || String(categoryId || '')
+  const categoryName = article.category?.name || '未分类'
   return {
-    id: String(article.id || ""),
-    title: article.title || "未命名文章",
+    id: String(article.id || ''),
+    title: article.title || '未命名文章',
     date: formatArticleDate(article.publishedAt || article.createdAt),
     category: categorySlug,
     categoryName,
     categoryId,
-    summary: article.summary || "暂无摘要",
+    summary: article.summary || '暂无摘要',
     content: splitContent(article.content),
-    cover: resolveImageUrl(
-      article.coverImage || article.listImage || article.headImage,
-    ),
+    cover: resolveImageUrl(article.coverImage || article.listImage || article.headImage),
     listImage: resolveImageUrl(article.listImage || article.coverImage),
     headImage: resolveImageUrl(article.headImage || article.coverImage),
     author: article.author || undefined,
@@ -292,171 +213,81 @@ function normalizeArticle(article: RawArticle): NewsArticle {
     isTop: Boolean(article.isTop),
     viewCount: Number(article.viewCount || 0),
     linkUrl: article.linkUrl || undefined,
-    status: article.status,
-  };
+    status: article.status
+  }
 }
 
 function normalizeCategory(category: RawCategory): NewsCategoryOption {
-  return {
-    id: category.id,
-    key: category.slug || String(category.id || ""),
-    label: category.name || "未命名栏目",
-  };
+  return { id: category.id, key: category.slug || String(category.id || ''), label: category.name || '未命名栏目' }
 }
 
 function filterByCategory(list: NewsArticle[], category?: string) {
-  if (!category || category === "all") {
-    return list;
-  }
-
-  return list.filter((item) => {
-    return (
-      item.category === category ||
-      String(item.categoryId) === category ||
-      item.categoryName === category
-    );
-  });
+  if (!category || category === 'all') return list
+  return list.filter((item) => item.category === category || String(item.categoryId) === category || item.categoryName === category)
 }
-
 function filterByKeyword(list: NewsArticle[], keyword?: string) {
-  const text = String(keyword || "")
-    .trim()
-    .toLowerCase();
-
-  if (!text) {
-    return list;
-  }
-
-  return list.filter((item) => {
-    return (
-      item.title.toLowerCase().includes(text) ||
-      item.summary.toLowerCase().includes(text) ||
-      item.categoryName.toLowerCase().includes(text) ||
-      item.content.join("").toLowerCase().includes(text)
-    );
-  });
+  const text = String(keyword || '').trim().toLowerCase()
+  if (!text) return list
+  return list.filter((item) => item.title.toLowerCase().includes(text) || item.summary.toLowerCase().includes(text) || item.categoryName.toLowerCase().includes(text) || item.content.join('').toLowerCase().includes(text))
 }
-
 function filterByTop(list: NewsArticle[], isTop?: boolean) {
-  if (isTop === undefined) {
-    return list;
-  }
-
-  return list.filter((item) => item.isTop === isTop);
+  if (isTop === undefined) return list
+  return list.filter((item) => item.isTop === isTop)
 }
 
 export async function fetchCategories() {
-  const data = await apiGet("/categories");
-  const list = Array.isArray(data)
-    ? data
-    : data?.list || data?.items || data?.records || [];
-
-  return list.map(normalizeCategory);
+  const data = await apiGet('/categories')
+  const list = Array.isArray(data) ? data : data?.list || data?.items || data?.records || []
+  return list.map(normalizeCategory)
 }
-
 export async function fetchCategoryTree() {
-  const data = await apiGet("/categories/tree");
-  return Array.isArray(data) ? data : [];
+  const data = await apiGet('/categories/tree')
+  return Array.isArray(data) ? data : []
 }
-
 export async function fetchCategoryMap() {
-  const categories = await fetchCategories();
-  const map = new Map<string, NewsCategoryOption>();
-
-  categories.forEach((item) => {
-    map.set(item.key, item);
-    if (item.id !== undefined) {
-      map.set(String(item.id), item);
-    }
-  });
-
-  return {
-    categories,
-    map,
-  };
+  const categories = await fetchCategories()
+  const map = new Map<string, NewsCategoryOption>()
+  categories.forEach((item) => { map.set(item.key, item); if (item.id !== undefined) map.set(String(item.id), item) })
+  return { categories, map }
 }
-
-export async function fetchArticles(
-  query: ArticleListQuery = {},
-): Promise<ArticleListResult> {
-  const page = query.page || 1;
-  const pageSize = query.pageSize || 10;
-
-  const data = await apiGet("/articles", {
-    page,
-    pageSize,
-    keyword: query.keyword,
-    categoryId: query.categoryId,
-    isTop: query.isTop,
-  });
-
-  const { rawList, pagination } = pickArticleList(data);
-
-  let list = rawList.map(normalizeArticle);
-
-  list = filterByCategory(list, query.category);
-  list = filterByKeyword(list, query.keyword);
-  list = filterByTop(list, query.isTop);
-
-  return {
-    list,
-    pagination: {
-      ...pagination,
-      total: list.length || pagination.total,
-      totalPages:
-        list.length > 0
-          ? Math.ceil(
-              (list.length || pagination.total) /
-                Math.max(pagination.pageSize, 1),
-            )
-          : pagination.totalPages,
-    },
-  };
+export async function fetchArticles(query: ArticleListQuery = {}): Promise<ArticleListResult> {
+  const page = query.page || 1
+  const pageSize = query.pageSize || 10
+  const data = await apiGet('/articles', { page, pageSize, keyword: query.keyword, categoryId: query.categoryId, isTop: query.isTop })
+  const { rawList, pagination } = pickArticleList(data)
+  let list = rawList.map(normalizeArticle)
+  list = filterByCategory(list, query.category)
+  list = filterByKeyword(list, query.keyword)
+  list = filterByTop(list, query.isTop)
+  return { list, pagination: { ...pagination, total: list.length || pagination.total, totalPages: list.length > 0 ? Math.ceil((list.length || pagination.total) / Math.max(pagination.pageSize, 1)) : pagination.totalPages } }
 }
-
-export async function fetchArticlesByCategorySlug(
-  slug: string,
-  pageSize = 5,
-  page = 1,
-): Promise<ArticleListResult> {
-  const { map } = await fetchCategoryMap();
-  const category = map.get(slug);
-
-  if (!category?.id) {
-    return {
-      list: [],
-      pagination: emptyPagination(page, pageSize),
-    };
-  }
-
-  return fetchArticles({
-    page,
-    pageSize,
-    categoryId: category.id,
-  });
+export async function fetchArticlesByCategorySlug(slug: string, pageSize = 5, page = 1): Promise<ArticleListResult> {
+  const { map } = await fetchCategoryMap()
+  const category = map.get(slug)
+  if (!category?.id) return { list: [], pagination: emptyPagination(page, pageSize) }
+  return fetchArticles({ page, pageSize, categoryId: category.id })
 }
-
 export async function fetchArticleDetail(id: string | number) {
-  const data = await apiGet(`/articles/${id}`);
-  return normalizeArticle(data);
+  const data = await apiGet(`/articles/${id}`)
+  return normalizeArticle(data)
 }
-
 export async function fetchRelatedArticles(article: NewsArticle, pageSize = 4) {
-  if (!article.categoryId) {
-    return [];
-  }
-
-  const result = await fetchArticles({
-    page: 1,
-    pageSize: pageSize + 5,
-    categoryId: article.categoryId,
-  });
-
-  return result.list
-    .filter((item) => item.id !== article.id)
-    .slice(0, pageSize);
+  if (!article.categoryId) return []
+  const result = await fetchArticles({ page: 1, pageSize: pageSize + 5, categoryId: article.categoryId })
+  return result.list.filter((item) => item.id !== article.id).slice(0, pageSize)
 }
 
-export function getApiBaseUrl() {
-  return API_BASE_URL;
+export async function fetchBanners(params: { position?: string; status?: string } = {}) {
+  const data = await apiGet('/banners', { position: params.position, status: params.status || 'ENABLED' })
+  const list = Array.isArray(data) ? data : []
+  return list.map((item: any) => ({ ...item, imageUrl: resolveImageUrl(item.imageUrl) })) as CmsBanner[]
 }
+export async function fetchLinks(params: { category?: string; status?: string } = {}) {
+  const data = await apiGet('/links', { category: params.category, status: params.status || 'ENABLED' })
+  return (Array.isArray(data) ? data : []) as CmsLink[]
+}
+export async function fetchLeaders(params: { status?: string } = {}) {
+  const data = await apiGet('/leaders', { status: params.status || 'ENABLED' })
+  return (Array.isArray(data) ? data : []).map((item: any) => ({ ...item, photo: resolveImageUrl(item.photo || '/images/logo.svg') })) as CmsLeader[]
+}
+export function getApiBaseUrl() { return API_BASE_URL }
