@@ -1,22 +1,16 @@
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { useRouter } from 'vue-router'
-import { createArticleApi } from '../../api/articles'
-import { getCategoryTreeApi } from '../../api/categories'
-import { adminArticleToApi, flattenCategoryTree } from '../../api/adapters'
+import { createId, readStorage, writeStorage } from '../../utils/storage'
+import { flatCategories, initialArticles } from '../../data/mockData'
 
-const router = useRouter()
 const activeTab = ref('normal')
-const saving = ref(false)
-const categoryOptions = ref([])
 
 const form = reactive({
   title: '',
   category: '',
   type: '普通文章',
   content: '',
-  summary: '',
   publishTime: '',
   source: '学校官网',
   department: '',
@@ -29,11 +23,6 @@ const form = reactive({
   galleryName: '',
   videoUrl: ''
 })
-
-async function loadCategories() {
-  const tree = await getCategoryTreeApi()
-  categoryOptions.value = flattenCategoryTree(tree)
-}
 
 function validateBase() {
   if (!form.title.trim()) {
@@ -57,13 +46,42 @@ function validateBase() {
   return true
 }
 
-function resetForm() {
+function saveArticle(status) {
+  if (!validateBase()) return
+
+  const articles = readStorage('school_admin_articles', initialArticles)
+  const categoryOption = flatCategories.find((item) => item.value === form.category)
+
+  articles.unshift({
+    id: createId('article'),
+    title: form.title,
+    category: form.category,
+    categoryName: categoryOption?.label || '',
+    type: form.type,
+    status,
+    author: form.author || '管理员',
+    department: form.department,
+    source: form.source,
+    publishTime: form.publishTime || new Date().toLocaleString('zh-CN', { hour12: false }),
+    isTop: false,
+    linkUrl: form.linkUrl,
+    carouselImage: form.carouselImage,
+    listImage: form.listImage,
+    headerImage: form.headerImage,
+    attachmentName: form.attachmentName,
+    galleryName: form.galleryName,
+    videoUrl: form.videoUrl,
+    content: form.content
+  })
+
+  writeStorage('school_admin_articles', articles)
+  ElMessage.success(status === '草稿' ? '已保存为草稿' : '已提交发布')
+
   Object.assign(form, {
     title: '',
     category: '',
     type: '普通文章',
     content: '',
-    summary: '',
     publishTime: '',
     source: '学校官网',
     department: '',
@@ -78,26 +96,6 @@ function resetForm() {
   })
   activeTab.value = 'normal'
 }
-
-async function saveArticle(statusCn) {
-  if (!validateBase()) return
-
-  saving.value = true
-
-  try {
-    await createArticleApi(adminArticleToApi(form, statusCn))
-    ElMessage.success(statusCn === '草稿' ? '已保存为草稿' : '已提交发布并写入数据库')
-    resetForm()
-
-    if (statusCn !== '草稿') {
-      router.push('/articles/all')
-    }
-  } finally {
-    saving.value = false
-  }
-}
-
-onMounted(loadCategories)
 </script>
 
 <template>
@@ -105,7 +103,7 @@ onMounted(loadCategories)
     <el-alert
       title="发布文章规则"
       type="warning"
-      description="本页面已接入 school-api。文章标题、发布栏目、文章内容、文章类型为常用必填项；保存后数据会写入 MySQL。"
+      description="旧系统要求文章标题、发布栏目、文章内容、文章类型为常用必填项；发布栏目需要勾选到最小子栏目，否则前台可能无法显示。"
       show-icon
       :closable="false"
       style="margin-bottom: 18px"
@@ -119,8 +117,8 @@ onMounted(loadCategories)
           </el-form-item>
 
           <el-form-item label="发布栏目" required>
-            <el-select v-model="form.category" placeholder="请选择最小子栏目" filterable style="width: 100%">
-              <el-option v-for="item in categoryOptions" :key="item.value" :label="item.label" :value="item.value" />
+            <el-select v-model="form.category" placeholder="请选择最小子栏目" style="width: 100%">
+              <el-option v-for="item in flatCategories" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
 
@@ -130,10 +128,6 @@ onMounted(loadCategories)
               <el-radio-button label="图片文章" />
               <el-radio-button label="外链文章" />
             </el-radio-group>
-          </el-form-item>
-
-          <el-form-item label="文章摘要">
-            <el-input v-model="form.summary" type="textarea" :rows="3" placeholder="可选。不填时会自动截取正文前 120 字" />
           </el-form-item>
 
           <el-form-item label="文章内容" required>
@@ -177,7 +171,7 @@ onMounted(loadCategories)
           </el-form-item>
 
           <el-form-item label="附件信息">
-            <el-input v-model="form.attachmentName" placeholder="本阶段先记录文字，文件上传后续接入" />
+            <el-input v-model="form.attachmentName" placeholder="例如：招生简章.pdf。后续接入文件上传" />
           </el-form-item>
 
           <el-form-item label="正文展示图册">
@@ -192,8 +186,8 @@ onMounted(loadCategories)
     </el-tabs>
 
     <div style="margin-left: 110px; margin-top: 18px">
-      <el-button :loading="saving" @click="saveArticle('草稿')">保存草稿</el-button>
-      <el-button type="primary" :loading="saving" @click="saveArticle('已发布')">提交发布</el-button>
+      <el-button @click="saveArticle('草稿')">保存草稿</el-button>
+      <el-button type="primary" @click="saveArticle('待审核')">提交发布</el-button>
     </div>
   </div>
 </template>

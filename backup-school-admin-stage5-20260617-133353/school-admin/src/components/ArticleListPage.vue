@@ -1,9 +1,8 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { deleteArticleApi, getArticlesApi, updateArticleApi, updateArticleTopApi } from '../api/articles'
-import { getCategoryTreeApi } from '../api/categories'
-import { adminArticleToApi, apiArticleToAdmin, flattenCategoryTree } from '../api/adapters'
+import { readStorage, writeStorage } from '../utils/storage'
+import { initialArticles, flatCategories } from '../data/mockData'
 
 const props = defineProps({
   scope: {
@@ -15,10 +14,7 @@ const props = defineProps({
 const keyword = ref('')
 const category = ref('')
 const status = ref('')
-const articles = ref([])
-const categoryOptions = ref([])
-const loading = ref(false)
-const saving = ref(false)
+const articles = ref(readStorage('school_admin_articles', initialArticles))
 const dialogVisible = ref(false)
 const dialogMode = ref('edit')
 
@@ -26,7 +22,6 @@ const form = reactive({
   id: '',
   title: '',
   category: '',
-  categoryId: '',
   categoryName: '',
   type: '普通文章',
   status: '草稿',
@@ -40,101 +35,66 @@ const form = reactive({
   headerImage: '',
   carouselImage: '',
   attachmentName: '',
-  summary: '',
   content: ''
 })
 
-const filteredArticles = computed(() => articles.value)
+const filteredArticles = computed(() => {
+  return articles.value.filter((item) => {
+    const keywordMatched = !keyword.value || item.title.includes(keyword.value) || item.author.includes(keyword.value)
+    const categoryMatched = !category.value || item.category === category.value
+    const statusMatched = !status.value || item.status === status.value
+    const scopeMatched = props.scope === 'all' || item.author === '管理员'
+    return keywordMatched && categoryMatched && statusMatched && scopeMatched
+  })
+})
 
-function apiStatusValue() {
-  const map = {
-    草稿: 'DRAFT',
-    待审核: 'PENDING',
-    已发布: 'PUBLISHED',
-    已下架: 'OFFLINE'
-  }
-  return status.value ? map[status.value] : ''
-}
-
-async function loadCategories() {
-  const tree = await getCategoryTreeApi()
-  categoryOptions.value = flattenCategoryTree(tree)
-}
-
-async function loadArticles() {
-  loading.value = true
-
-  try {
-    const data = await getArticlesApi({
-      page: 1,
-      pageSize: 100,
-      keyword: keyword.value,
-      categoryId: category.value || undefined,
-      status: apiStatusValue() || undefined
-    })
-
-    articles.value = (data.list || []).map(apiArticleToAdmin)
-  } finally {
-    loading.value = false
-  }
+function saveAll() {
+  writeStorage('school_admin_articles', articles.value)
 }
 
 function resetFilters() {
   keyword.value = ''
   category.value = ''
   status.value = ''
-  loadArticles()
 }
 
 function openDialog(row, mode) {
   dialogMode.value = mode
-  Object.assign(form, row, {
-    category: row.categoryId || row.category
-  })
+  Object.assign(form, row)
   dialogVisible.value = true
 }
 
-async function saveDialog() {
-  if (!form.title.trim()) {
-    ElMessage.warning('请填写文章标题')
-    return
-  }
+function saveDialog() {
+  const option = flatCategories.find((item) => item.value === form.category)
+  form.categoryName = option?.label || form.categoryName
+  const index = articles.value.findIndex((item) => item.id === form.id)
 
-  if (!form.category) {
-    ElMessage.warning('请选择发布栏目')
-    return
-  }
-
-  saving.value = true
-
-  try {
-    await updateArticleApi(form.id, adminArticleToApi(form, form.status))
+  if (index >= 0) {
+    articles.value[index] = { ...form }
+    saveAll()
     ElMessage.success('保存成功')
     dialogVisible.value = false
-    await loadArticles()
-  } finally {
-    saving.value = false
   }
 }
 
 function removeArticle(row) {
   ElMessageBox.confirm(`确定删除文章“${row.title}”吗？`, '删除确认', {
     type: 'warning'
-  }).then(async () => {
-    await deleteArticleApi(row.id)
+  }).then(() => {
+    articles.value = articles.value.filter((item) => item.id !== row.id)
+    saveAll()
     ElMessage.success('删除成功')
-    await loadArticles()
   })
 }
 
-async function toggleTop(row) {
-  await updateArticleTopApi(row.id, !row.isTop)
-  ElMessage.success(row.isTop ? '已取消置顶' : '已置顶')
-  await loadArticles()
+function toggleTop(row) {
+  row.isTop = !row.isTop
+  saveAll()
+  ElMessage.success(row.isTop ? '已置顶' : '已取消置顶')
 }
 
 function refresh() {
-  loadArticles()
+  articles.value = readStorage('school_admin_articles', initialArticles)
   ElMessage.success('已刷新')
 }
 
@@ -143,11 +103,6 @@ function tableRowClassName({ row }) {
   if (row.status === '已发布') return 'success-row'
   return ''
 }
-
-onMounted(async () => {
-  await loadCategories()
-  await loadArticles()
-})
 </script>
 
 <template>
@@ -155,9 +110,9 @@ onMounted(async () => {
     <div class="page-card">
       <div class="toolbar">
         <div class="toolbar-left">
-          <el-input v-model="keyword" placeholder="请输入文章标题或作者" clearable style="width: 240px" @keyup.enter="loadArticles" />
-          <el-select v-model="category" placeholder="发布栏目" clearable filterable style="width: 180px">
-            <el-option v-for="item in categoryOptions" :key="item.value" :label="item.label" :value="item.value" />
+          <el-input v-model="keyword" placeholder="请输入文章标题或作者" clearable style="width: 240px" />
+          <el-select v-model="category" placeholder="发布栏目" clearable style="width: 180px">
+            <el-option v-for="item in flatCategories" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
           <el-select v-model="status" placeholder="文章状态" clearable style="width: 150px">
             <el-option label="草稿" value="草稿" />
@@ -165,7 +120,7 @@ onMounted(async () => {
             <el-option label="已发布" value="已发布" />
             <el-option label="已下架" value="已下架" />
           </el-select>
-          <el-button type="primary" @click="loadArticles">查询</el-button>
+          <el-button type="primary">查询</el-button>
           <el-button @click="resetFilters">重置</el-button>
         </div>
         <div class="toolbar-right">
@@ -173,7 +128,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <el-table v-loading="loading" :data="filteredArticles" border stripe :row-class-name="tableRowClassName">
+      <el-table :data="filteredArticles" border stripe :row-class-name="tableRowClassName">
         <el-table-column type="selection" width="45" />
         <el-table-column prop="title" label="文章标题" min-width="260" show-overflow-tooltip />
         <el-table-column prop="categoryName" label="栏目" width="110" />
@@ -212,8 +167,8 @@ onMounted(async () => {
           <el-input v-model="form.title" />
         </el-form-item>
         <el-form-item label="发布栏目">
-          <el-select v-model="form.category" filterable style="width: 100%">
-            <el-option v-for="item in categoryOptions" :key="item.value" :label="item.label" :value="item.value" />
+          <el-select v-model="form.category" style="width: 100%">
+            <el-option v-for="item in flatCategories" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
         <el-form-item label="文章状态">
@@ -223,9 +178,6 @@ onMounted(async () => {
             <el-option label="已发布" value="已发布" />
             <el-option label="已下架" value="已下架" />
           </el-select>
-        </el-form-item>
-        <el-form-item label="文章摘要">
-          <el-input v-model="form.summary" type="textarea" :rows="3" />
         </el-form-item>
         <el-form-item label="文章来源">
           <el-input v-model="form.source" />
@@ -245,6 +197,9 @@ onMounted(async () => {
         <el-form-item label="正文头图">
           <el-input v-model="form.headerImage" />
         </el-form-item>
+        <el-form-item label="附件名称">
+          <el-input v-model="form.attachmentName" />
+        </el-form-item>
         <el-form-item label="文章内容">
           <el-input v-model="form.content" type="textarea" :rows="8" />
         </el-form-item>
@@ -252,7 +207,7 @@ onMounted(async () => {
 
       <template #footer>
         <el-button @click="dialogVisible = false">关闭</el-button>
-        <el-button v-if="dialogMode !== 'view'" type="primary" :loading="saving" @click="saveDialog">保存</el-button>
+        <el-button v-if="dialogMode !== 'view'" type="primary" @click="saveDialog">保存</el-button>
       </template>
     </el-dialog>
   </div>

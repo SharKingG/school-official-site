@@ -13,17 +13,17 @@ import {
   FolderOpened,
   SwitchButton
 } from '@element-plus/icons-vue'
-import { clearAuth, getAdminName } from '../utils/auth'
 
 const route = useRoute()
 const router = useRouter()
 
 const activeMenu = computed(() => route.path)
 const pageTitle = computed(() => route.meta.title || '学校官网后台')
-const adminName = computed(() => getAdminName())
+const adminName = computed(() => localStorage.getItem('school_admin_name') || '管理员')
 
 function logout() {
-  clearAuth()
+  localStorage.removeItem('school_admin_token')
+  localStorage.removeItem('school_admin_name')
   router.push('/login')
 }
 </script>
@@ -109,7 +109,7 @@ function logout() {
       <el-header class="admin-header">
         <div>
           <h1>{{ pageTitle }}</h1>
-          <p>第六阶段：后台登录、栏目管理、文章发布和文章管理已接入真实 school-api</p>
+          <p>根据旧版校园网操作手册反推的后台管理原型</p>
         </div>
 
         <div class="header-actions">

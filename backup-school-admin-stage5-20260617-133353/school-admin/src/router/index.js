@@ -13,7 +13,6 @@ import AdmissionManager from '../views/admissions/AdmissionManager.vue'
 import RecruitmentManager from '../views/recruitment/RecruitmentManager.vue'
 import PublicQueryManager from '../views/public-query/PublicQueryManager.vue'
 import FileManager from '../views/files/FileManager.vue'
-import { getToken } from '../utils/auth'
 
 const routes = [
   { path: '/login', name: 'login', component: Login },
@@ -44,7 +43,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  const token = getToken()
+  const token = localStorage.getItem('school_admin_token')
 
   if (to.path !== '/login' && !token) {
     return '/login'
