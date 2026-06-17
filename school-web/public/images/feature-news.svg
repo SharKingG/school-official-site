@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+  <rect width="900" height="520" fill="#eaf7ff"/>
+  <rect x="70" y="110" width="760" height="320" rx="18" fill="#ffffff"/>
+  <rect x="110" y="150" width="250" height="190" rx="12" fill="#95c9ea"/>
+  <rect x="400" y="150" width="360" height="30" rx="8" fill="#d50000"/>
+  <rect x="400" y="205" width="330" height="18" rx="9" fill="#ccd7df"/>
+  <rect x="400" y="245" width="300" height="18" rx="9" fill="#ccd7df"/>
+  <rect x="400" y="285" width="330" height="18" rx="9" fill="#ccd7df"/>
+  <rect x="400" y="325" width="260" height="18" rx="9" fill="#ccd7df"/>
+  <text x="235" y="260" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="40" fill="#fff" font-weight="700">校园要闻</text>
+</svg>
