@@ -62,6 +62,7 @@ function logout() {
               <span>网站管理</span>
             </template>
             <el-menu-item v-if="can('category:manage')" index="/columns">网站栏目管理</el-menu-item>
+            <el-menu-item v-if="can('category:manage')" index="/nav-menus">导航菜单</el-menu-item>
             <el-menu-item v-if="can('site:manage')" index="/home-config">首页配置</el-menu-item>
           </el-sub-menu>
 
@@ -133,7 +134,7 @@ function logout() {
       <el-header class="admin-header">
         <div>
           <h1>{{ pageTitle }}</h1>
-          <p>第十一阶段：站点设置、首页配置和数据备份已接入真实 school-api</p>
+          <p>第十三阶段：导航菜单、栏目树和前台下拉菜单已接入真实 school-api</p>
         </div>
 
         <div class="header-actions">

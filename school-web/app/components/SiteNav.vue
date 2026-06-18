@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { navItems } from '~/data/site'
+import { fetchNavMenus, type WebNavMenu } from '~/api/site'
 
 const route = useRoute()
+const { data: menus } = await useAsyncData('site-nav-menus', fetchNavMenus)
+
+function menuPath(item: WebNavMenu) {
+  return item.path || (item.slug === 'home' ? '/' : `/news?category=${item.slug}`)
+}
 
 function isActive(path: string) {
   if (path === '/') {
@@ -16,19 +21,37 @@ function isActive(path: string) {
 
   return route.path === '/news' && route.query.category === category
 }
+
+function hasActiveChild(item: WebNavMenu) {
+  return (item.children || []).some((child) => isActive(menuPath(child)))
+}
 </script>
 
 <template>
   <nav class="site-nav">
     <div class="container nav-inner">
-      <NuxtLink
-        v-for="item in navItems"
-        :key="item.label"
-        :to="item.path"
-        :class="{ 'is-active': isActive(item.path) }"
+      <div
+        v-for="item in menus || []"
+        :key="item.id || item.slug"
+        class="nav-item-wrap"
+        :class="{ 'is-active': isActive(menuPath(item)) || hasActiveChild(item) }"
       >
-        {{ item.label }}
-      </NuxtLink>
+        <NuxtLink class="nav-link" :to="menuPath(item)">
+          {{ item.label || item.name }}
+        </NuxtLink>
+
+        <div v-if="item.children?.length" class="nav-dropdown">
+          <NuxtLink
+            v-for="child in item.children"
+            :key="child.id || child.slug"
+            :to="menuPath(child)"
+            class="nav-dropdown-link"
+            :class="{ 'is-active': isActive(menuPath(child)) }"
+          >
+            {{ child.label || child.name }}
+          </NuxtLink>
+        </div>
+      </div>
     </div>
   </nav>
 </template>

@@ -40,9 +40,11 @@ export function apiCategoryToTreeNode(item) {
     slug: item.slug,
     parentId: item.parentId,
     type: item.type === 'LINK' ? '自定义链接' : '普通栏目',
+    rawType: item.type || 'ARTICLE',
     path: item.path || '',
     sort: item.sort || 0,
     status: item.status === 'DISABLED' ? '停用' : '启用',
+    rawStatus: item.status || 'ENABLED',
     children: (item.children || []).map(apiCategoryToTreeNode)
   }
 }

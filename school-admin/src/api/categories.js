@@ -8,6 +8,10 @@ export function getCategoryTreeApi() {
   return request.get('/categories/tree')
 }
 
+export function getCategoryNavApi() {
+  return request.get('/categories/nav')
+}
+
 export function createCategoryApi(data) {
   return request.post('/categories', data)
 }

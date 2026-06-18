@@ -28,6 +28,11 @@ export class CategoriesController {
     return this.categoriesService.findTree()
   }
 
+  @Get('nav')
+  findNav() {
+    return this.categoriesService.findNav()
+  }
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.categoriesService.findOne(id)

@@ -19,6 +19,7 @@ import RoleManager from '../views/system/RoleManager.vue'
 import OperationLog from '../views/system/OperationLog.vue'
 import SiteSettings from '../views/system/SiteSettings.vue'
 import HomeConfig from '../views/website/HomeConfig.vue'
+import NavMenuManager from '../views/website/NavMenuManager.vue'
 import BackupManager from '../views/system/BackupManager.vue'
 import { getToken, hasPermission } from '../utils/auth'
 
@@ -32,6 +33,7 @@ const routes = [
       { path: 'dashboard', name: 'dashboard', component: Dashboard, meta: { title: '工作台' } },
       { path: 'columns', name: 'columns', component: ColumnManager, meta: { title: '网站栏目管理', permission: 'category:manage' } },
       { path: 'home-config', name: 'homeConfig', component: HomeConfig, meta: { title: '首页配置', permission: 'site:manage' } },
+      { path: 'nav-menus', name: 'navMenus', component: NavMenuManager, meta: { title: '导航菜单', permission: 'category:manage' } },
       { path: 'articles/publish', name: 'articlePublish', component: ArticlePublish, meta: { title: '发布文章', permission: 'article:create' } },
       { path: 'articles/my', name: 'myArticles', component: MyArticles, meta: { title: '管理我的文章', permission: 'article:manage' } },
       { path: 'articles/all', name: 'allArticles', component: AllArticles, meta: { title: '管理所有文章', permission: 'article:manage' } },

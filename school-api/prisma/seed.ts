@@ -98,23 +98,87 @@ async function main() {
     })
   }
 
-  const categories = [
+  async function upsertCategory(item: { name: string; slug: string; sort: number; parentSlug?: string; path?: string; type?: string }) {
+    const parent = item.parentSlug
+      ? await prisma.category.findUnique({ where: { slug: item.parentSlug } })
+      : null
+
+    return prisma.category.upsert({
+      where: { slug: item.slug },
+      update: {
+        name: item.name,
+        sort: item.sort,
+        parentId: parent?.id || null,
+        path: item.path || `/news?category=${item.slug}`,
+        type: item.type || 'ARTICLE',
+        status: 'ENABLED'
+      },
+      create: {
+        name: item.name,
+        slug: item.slug,
+        sort: item.sort,
+        parentId: parent?.id || null,
+        path: item.path || `/news?category=${item.slug}`,
+        type: item.type || 'ARTICLE',
+        status: 'ENABLED'
+      }
+    })
+  }
+
+  const rootCategories = [
+    { name: '首页', slug: 'home', sort: 0, path: '/', type: 'LINK' },
     { name: '集团动态', slug: 'campus', sort: 1 },
     { name: '党建引领', slug: 'party', sort: 2 },
     { name: '学生成长', slug: 'student', sort: 3 },
     { name: '教师发展', slug: 'teacher', sort: 4 },
     { name: '后勤服务', slug: 'service', sort: 5 },
-    { name: '招生招聘', slug: 'recruit', sort: 6 },
-    { name: '通知公告', slug: 'notice', sort: 7 },
+    { name: '教工之家', slug: 'staff-home', sort: 6 },
+    { name: '招生招聘', slug: 'recruit', sort: 7 },
     { name: '校庆专栏', slug: 'anniversary', sort: 8 }
   ]
 
-  for (const item of categories) {
-    await prisma.category.upsert({
-      where: { slug: item.slug },
-      update: { name: item.name, sort: item.sort },
-      create: item
-    })
+  for (const item of rootCategories) {
+    await upsertCategory(item)
+  }
+
+  const childCategories = [
+    { parentSlug: 'campus', name: '集团新闻', slug: 'group-news', sort: 1 },
+    { parentSlug: 'campus', name: '集团简介', slug: 'group-profile', sort: 2 },
+    { parentSlug: 'campus', name: '通知公告', slug: 'notice', sort: 3 },
+
+    { parentSlug: 'party', name: '党建动态', slug: 'party-news', sort: 1 },
+    { parentSlug: 'party', name: '政策学习', slug: 'policy-study', sort: 2 },
+    { parentSlug: 'party', name: '实施方案', slug: 'implementation-plan', sort: 3 },
+    { parentSlug: 'party', name: '党务公开', slug: 'party-affairs', sort: 4 },
+
+    { parentSlug: 'student', name: '德育动态', slug: 'moral-education', sort: 1 },
+    { parentSlug: 'student', name: '团旗飘扬', slug: 'youth-league', sort: 2 },
+    { parentSlug: 'student', name: '学生风采', slug: 'student-style', sort: 3 },
+    { parentSlug: 'student', name: '文体活动', slug: 'culture-sports', sort: 4 },
+    { parentSlug: 'student', name: '竞技风采', slug: 'competition-style', sort: 5 },
+    { parentSlug: 'student', name: '学生社团', slug: 'student-clubs', sort: 6 },
+    { parentSlug: 'student', name: '湛二翘楚', slug: 'excellent-students', sort: 7 },
+    { parentSlug: 'student', name: '研学行', slug: 'study-tour', sort: 8 },
+
+    { parentSlug: 'teacher', name: '师德师风', slug: 'teacher-ethics', sort: 1 },
+    { parentSlug: 'teacher', name: '教学管理', slug: 'teaching-management', sort: 2 },
+    { parentSlug: 'teacher', name: '教研动态', slug: 'teaching-research', sort: 3 },
+    { parentSlug: 'teacher', name: '教研组建设', slug: 'research-group', sort: 4 },
+    { parentSlug: 'teacher', name: '教师培训', slug: 'teacher-training', sort: 5 },
+    { parentSlug: 'teacher', name: '名师工作室', slug: 'master-studio', sort: 6 },
+    { parentSlug: 'teacher', name: '教学资源库', slug: 'teaching-resources', sort: 7 },
+
+    { parentSlug: 'recruit', name: '招生报名', slug: 'admissions-entry', sort: 1, path: '/admissions', type: 'LINK' },
+    { parentSlug: 'recruit', name: '招聘信息', slug: 'recruitment-entry', sort: 2, path: '/recruitment', type: 'LINK' },
+
+    { parentSlug: 'anniversary', name: '校庆公告', slug: 'anniversary-notice', sort: 1 },
+    { parentSlug: 'anniversary', name: '校庆飞鸿', slug: 'anniversary-letter', sort: 2 },
+    { parentSlug: 'anniversary', name: '校友捐赠', slug: 'alumni-donation', sort: 3 },
+    { parentSlug: 'anniversary', name: '校友动态', slug: 'alumni-news', sort: 4 }
+  ]
+
+  for (const item of childCategories) {
+    await upsertCategory(item)
   }
 
   const recruitCategory = await prisma.category.findUnique({ where: { slug: 'recruit' } })

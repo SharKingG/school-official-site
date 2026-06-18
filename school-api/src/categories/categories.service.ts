@@ -60,6 +60,45 @@ export class CategoriesService {
     }
   }
 
+  async findNav() {
+    const list = await this.prisma.category.findMany({
+      where: { status: 'ENABLED' },
+      orderBy: [{ sort: 'asc' }, { id: 'asc' }],
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        parentId: true,
+        sort: true,
+        status: true,
+        type: true,
+        path: true
+      }
+    })
+
+    const map = new Map<number, any>()
+    const roots: any[] = []
+
+    for (const item of list) {
+      const path = item.path || (item.slug === 'home' ? '/' : `/news?category=${item.slug}`)
+      map.set(item.id, { ...item, path, children: [] })
+    }
+
+    for (const item of map.values()) {
+      if (item.parentId && map.has(item.parentId)) {
+        map.get(item.parentId).children.push(item)
+      } else {
+        roots.push(item)
+      }
+    }
+
+    return {
+      code: 0,
+      message: '获取成功',
+      data: roots
+    }
+  }
+
   async findOne(id: number) {
     const category = await this.prisma.category.findUnique({
       where: { id },
