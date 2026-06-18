@@ -56,12 +56,13 @@ function logout() {
             <span>工作台</span>
           </el-menu-item>
 
-          <el-sub-menu v-if="canAny(['category:manage'])" index="website">
+          <el-sub-menu v-if="canAny(['category:manage', 'site:manage'])" index="website">
             <template #title>
               <el-icon><Menu /></el-icon>
               <span>网站管理</span>
             </template>
             <el-menu-item v-if="can('category:manage')" index="/columns">网站栏目管理</el-menu-item>
+            <el-menu-item v-if="can('site:manage')" index="/home-config">首页配置</el-menu-item>
           </el-sub-menu>
 
           <el-sub-menu v-if="canAny(['article:create', 'article:manage', 'article:review'])" index="articles">
@@ -113,13 +114,15 @@ function logout() {
             <span>文件管理</span>
           </el-menu-item>
 
-          <el-sub-menu v-if="canAny(['system:manage', 'log:view'])" index="system">
+          <el-sub-menu v-if="canAny(['system:manage', 'site:manage', 'log:view'])" index="system">
             <template #title>
               <el-icon><Setting /></el-icon>
               <span>系统管理</span>
             </template>
             <el-menu-item v-if="can('system:manage')" index="/system/users">用户管理</el-menu-item>
             <el-menu-item v-if="can('system:manage')" index="/system/roles">角色权限</el-menu-item>
+            <el-menu-item v-if="can('site:manage')" index="/system/site-settings">站点设置</el-menu-item>
+            <el-menu-item v-if="can('site:manage')" index="/system/backups">数据备份</el-menu-item>
             <el-menu-item v-if="can('log:view')" index="/system/logs">操作日志</el-menu-item>
           </el-sub-menu>
         </el-menu>
@@ -130,7 +133,7 @@ function logout() {
       <el-header class="admin-header">
         <div>
           <h1>{{ pageTitle }}</h1>
-          <p>第十阶段：用户角色、文章审核和操作日志已接入真实 school-api</p>
+          <p>第十一阶段：站点设置、首页配置和数据备份已接入真实 school-api</p>
         </div>
 
         <div class="header-actions">

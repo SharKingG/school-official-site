@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import { siteConfig } from '~/data/site'
+import { fetchSiteSettings } from '~/api/site'
 
 const keyword = ref('')
+const { data: settings } = await useAsyncData('site-settings-header', fetchSiteSettings)
 
 function handleSearch() {
   const value = keyword.value.trim()
-
   if (!value) {
     navigateTo('/search')
     return
   }
-
   navigateTo(`/search?keyword=${encodeURIComponent(value)}`)
 }
 </script>
@@ -22,16 +21,15 @@ function handleSearch() {
 
     <div class="container header-inner">
       <NuxtLink to="/" class="brand" aria-label="返回首页">
-        <img class="brand-logo-img" :src="siteConfig.logo" :alt="siteConfig.schoolName" />
-
+        <img class="brand-logo-img" :src="settings?.logo" :alt="settings?.schoolName" />
         <div class="brand-text">
-          <h1>{{ siteConfig.schoolName }}</h1>
-          <p>{{ siteConfig.schoolEnglishName }}</p>
+          <h1>{{ settings?.schoolName }}</h1>
+          <p>{{ settings?.schoolEnglishName }}</p>
         </div>
       </NuxtLink>
 
       <form class="site-search" @submit.prevent="handleSearch">
-        <input v-model="keyword" type="text" placeholder="文章搜索" />
+        <input v-model="keyword" type="text" :placeholder="settings?.searchPlaceholder || '文章搜索'" />
         <button type="submit">搜索</button>
       </form>
     </div>

@@ -15,10 +15,11 @@ const permissions = {
     'recruitment:manage',
     'query:manage',
     'file:manage',
+    'site:manage',
     'system:manage',
     'log:view'
   ],
-  content: ['dashboard:view', 'category:manage', 'article:create', 'article:manage', 'file:manage'],
+  content: ['dashboard:view', 'category:manage', 'article:create', 'article:manage', 'file:manage', 'site:manage'],
   admission: ['dashboard:view', 'admission:manage', 'file:manage'],
   recruitment: ['dashboard:view', 'recruitment:manage', 'file:manage'],
   query: ['dashboard:view', 'query:manage', 'file:manage'],
@@ -327,6 +328,86 @@ async function main() {
     })
   }
 
+
+  const defaultSettings = [
+    { key: 'schoolName', label: '学校名称', value: '某某市第一中学', group: 'BASIC', sort: 1 },
+    { key: 'schoolEnglishName', label: '英文名称', value: 'Moumou No.1 Middle School', group: 'BASIC', sort: 2 },
+    { key: 'logo', label: '学校 Logo', value: '/images/logo.svg', group: 'BASIC', sort: 3 },
+    { key: 'banner', label: '默认首页横幅', value: '/images/campus-banner.svg', group: 'BASIC', sort: 4 },
+    { key: 'slogan', label: '学校校训/口号', value: '厚德 博学 求实 创新', group: 'BASIC', sort: 5 },
+    { key: 'subSlogan', label: '首页副标题', value: '建设有温度、有品质、有特色的现代化学校官网', group: 'BASIC', sort: 6 },
+    { key: 'address', label: '学校地址', value: '某某市某某区某某路 1 号', group: 'CONTACT', sort: 10 },
+    { key: 'phone', label: '联系电话', value: '0759-0000000', group: 'CONTACT', sort: 11 },
+    { key: 'email', label: '邮箱', value: 'school@example.com', group: 'CONTACT', sort: 12 },
+    { key: 'postcode', label: '邮政编码', value: '524000', group: 'CONTACT', sort: 13 },
+    { key: 'icp', label: '备案号', value: '粤ICP备00000000号', group: 'FOOTER', sort: 20 },
+    { key: 'copyrightYear', label: '版权年份', value: '2026', group: 'FOOTER', sort: 21 },
+    { key: 'browserTitle', label: '浏览器标题', value: '某某市第一中学官网', group: 'SEO', sort: 30 },
+    { key: 'searchPlaceholder', label: '搜索框提示语', value: '文章搜索', group: 'SEO', sort: 31 },
+    { key: 'enableArticleReview', label: '是否开启文章审核', value: 'true', group: 'PARAM', type: 'BOOLEAN', sort: 40 },
+    { key: 'enableAdmission', label: '是否开启招生报名', value: 'true', group: 'PARAM', type: 'BOOLEAN', sort: 41 },
+    { key: 'enableRecruitment', label: '是否开启招聘投递', value: 'true', group: 'PARAM', type: 'BOOLEAN', sort: 42 },
+    { key: 'enablePublicQueryCaptcha', label: '公共查询是否启用验证码', value: 'false', group: 'PARAM', type: 'BOOLEAN', sort: 43 },
+    { key: 'uploadMaxSizeMb', label: '上传文件大小限制 MB', value: '20', group: 'PARAM', type: 'NUMBER', sort: 44 },
+    { key: 'allowedUploadTypes', label: '允许上传的文件类型', value: 'jpg,png,gif,pdf,doc,docx,xls,xlsx', group: 'PARAM', sort: 45 }
+  ]
+
+  for (const item of defaultSettings) {
+    await prisma.siteSetting.upsert({
+      where: { settingKey: item.key },
+      update: {
+        label: item.label,
+        valueType: item.type || 'TEXT',
+        settingGroup: item.group,
+        sort: item.sort
+      },
+      create: {
+        settingKey: item.key,
+        label: item.label,
+        settingValue: item.value,
+        valueType: item.type || 'TEXT',
+        settingGroup: item.group,
+        sort: item.sort
+      }
+    })
+  }
+
+  const defaultHomeSections = [
+    { title: '党建引领', icon: '🚩', categorySlug: 'party', articleLimit: 5, moreLink: '/news?category=party', sort: 1 },
+    { title: '学生成长', icon: '🌱', categorySlug: 'student', articleLimit: 5, moreLink: '/news?category=student', sort: 2 },
+    { title: '教师发展', icon: '👩‍🏫', categorySlug: 'teacher', articleLimit: 5, moreLink: '/news?category=teacher', sort: 3 },
+    { title: '后勤服务', icon: '🍽️', categorySlug: 'service', articleLimit: 5, moreLink: '/news?category=service', sort: 4 },
+    { title: '招生招聘', icon: '📣', categorySlug: 'recruit', articleLimit: 5, moreLink: '/news?category=recruit', sort: 5 },
+    { title: '校庆专栏', icon: '🎉', categorySlug: 'anniversary', articleLimit: 5, moreLink: '/news?category=anniversary', sort: 6 }
+  ]
+
+  for (const item of defaultHomeSections) {
+    const exists = await prisma.homeSection.findFirst({ where: { title: item.title, categorySlug: item.categorySlug } })
+    if (!exists) {
+      await prisma.homeSection.create({
+        data: {
+          ...item,
+          layout: 'CARD',
+          visible: true
+        }
+      })
+    }
+  }
+
+  const backupExists = await prisma.backupRecord.findFirst({ where: { title: '系统初始化备份记录' } })
+  if (!backupExists) {
+    await prisma.backupRecord.create({
+      data: {
+        title: '系统初始化备份记录',
+        backupType: 'AUTO',
+        scope: 'CONFIG_AND_BUSINESS',
+        description: '第十一阶段初始化站点设置、首页配置和备份管理模块。',
+        status: 'SUCCESS',
+        createdBy: 'system'
+      }
+    })
+  }
+
   const logExists = await prisma.operationLog.findFirst({ where: { module: '系统初始化', action: '初始化第十阶段权限角色' } })
 
   if (!logExists) {
@@ -337,13 +418,13 @@ async function main() {
         module: '系统初始化',
         action: '初始化第十阶段权限角色',
         targetType: 'system',
-        description: '初始化角色、权限、测试账号和操作日志',
+        description: '初始化角色、权限、测试账号、操作日志、站点设置和首页配置',
         result: 'SUCCESS'
       }
     })
   }
 
-  console.log('Seed completed. Admin account: admin / 123456. Extra users: content/reviewer/admission / 123456')
+  console.log('Seed completed. Admin account: admin / 123456. Extra users: content/reviewer/admission / 123456. Stage 11 site settings initialized.')
 }
 
 main()

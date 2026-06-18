@@ -1,4 +1,17 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common'
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors
+} from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { diskStorage } from 'multer'
 import { extname, join } from 'node:path'
@@ -12,6 +25,12 @@ function ensureUploadDir() {
   return dir
 }
 
+function makeSafeFileName(originalName = '') {
+  const ext = extname(originalName)
+  const random = Math.round(Math.random() * 1e9)
+  return `${Date.now()}-${random}${ext}`
+}
+
 @UseGuards(JwtAuthGuard)
 @Controller('uploads')
 export class UploadsController {
@@ -21,11 +40,11 @@ export class UploadsController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: () => ensureUploadDir(),
+        destination: (_req, _file, callback) => {
+          callback(null, ensureUploadDir())
+        },
         filename: (_req, file, callback) => {
-          const ext = extname(file.originalname || '')
-          const safeName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`
-          callback(null, safeName)
+          callback(null, makeSafeFileName(file.originalname || ''))
         }
       }),
       limits: {
@@ -33,7 +52,7 @@ export class UploadsController {
       }
     })
   )
-  upload(@UploadedFile() file: any, @Body('module') module = 'common') {
+  async upload(@UploadedFile() file: any, @Body('module') module = 'common') {
     if (!file) throw new BadRequestException('请选择要上传的文件')
     return this.uploadsService.create(file, module)
   }

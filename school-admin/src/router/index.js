@@ -17,6 +17,9 @@ import FileManager from '../views/files/FileManager.vue'
 import UserManager from '../views/system/UserManager.vue'
 import RoleManager from '../views/system/RoleManager.vue'
 import OperationLog from '../views/system/OperationLog.vue'
+import SiteSettings from '../views/system/SiteSettings.vue'
+import HomeConfig from '../views/website/HomeConfig.vue'
+import BackupManager from '../views/system/BackupManager.vue'
 import { getToken, hasPermission } from '../utils/auth'
 
 const routes = [
@@ -28,6 +31,7 @@ const routes = [
     children: [
       { path: 'dashboard', name: 'dashboard', component: Dashboard, meta: { title: '工作台' } },
       { path: 'columns', name: 'columns', component: ColumnManager, meta: { title: '网站栏目管理', permission: 'category:manage' } },
+      { path: 'home-config', name: 'homeConfig', component: HomeConfig, meta: { title: '首页配置', permission: 'site:manage' } },
       { path: 'articles/publish', name: 'articlePublish', component: ArticlePublish, meta: { title: '发布文章', permission: 'article:create' } },
       { path: 'articles/my', name: 'myArticles', component: MyArticles, meta: { title: '管理我的文章', permission: 'article:manage' } },
       { path: 'articles/all', name: 'allArticles', component: AllArticles, meta: { title: '管理所有文章', permission: 'article:manage' } },
@@ -41,6 +45,8 @@ const routes = [
       { path: 'files', name: 'files', component: FileManager, meta: { title: '文件管理', permission: 'file:manage' } },
       { path: 'system/users', name: 'systemUsers', component: UserManager, meta: { title: '用户管理', permission: 'system:manage' } },
       { path: 'system/roles', name: 'systemRoles', component: RoleManager, meta: { title: '角色权限', permission: 'system:manage' } },
+      { path: 'system/site-settings', name: 'siteSettings', component: SiteSettings, meta: { title: '站点设置', permission: 'site:manage' } },
+      { path: 'system/backups', name: 'backupManager', component: BackupManager, meta: { title: '数据备份', permission: 'site:manage' } },
       { path: 'system/logs', name: 'systemLogs', component: OperationLog, meta: { title: '操作日志', permission: 'log:view' } }
     ]
   }

@@ -11,6 +11,7 @@ export const ALL_PERMISSIONS = [
   'recruitment:manage',
   'query:manage',
   'file:manage',
+  'site:manage',
   'system:manage',
   'log:view'
 ]
@@ -28,13 +29,14 @@ export const PERMISSION_LABELS: Record<string, string> = {
   'recruitment:manage': '招聘管理',
   'query:manage': '公共查询',
   'file:manage': '文件管理',
+  'site:manage': '站点配置',
   'system:manage': '系统管理',
   'log:view': '操作日志'
 }
 
 export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
   SUPER_ADMIN: [...ALL_PERMISSIONS],
-  CONTENT_ADMIN: ['dashboard:view', 'article:create', 'article:manage', 'category:manage', 'file:manage'],
+  CONTENT_ADMIN: ['dashboard:view', 'article:create', 'article:manage', 'category:manage', 'file:manage', 'site:manage'],
   ADMISSION_ADMIN: ['dashboard:view', 'admission:manage', 'file:manage'],
   RECRUITMENT_ADMIN: ['dashboard:view', 'recruitment:manage', 'file:manage'],
   QUERY_ADMIN: ['dashboard:view', 'query:manage', 'file:manage'],
