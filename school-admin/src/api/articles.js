@@ -23,3 +23,23 @@ export function deleteArticleApi(id) {
 export function updateArticleTopApi(id, isTop) {
   return request.patch(`/articles/${id}/top`, { isTop })
 }
+
+export function submitArticleReviewApi(id, comment = '') {
+  return request.patch(`/articles/${id}/submit-review`, { comment })
+}
+
+export function approveArticleApi(id, comment = '') {
+  return request.patch(`/articles/${id}/approve`, { comment })
+}
+
+export function rejectArticleApi(id, comment = '') {
+  return request.patch(`/articles/${id}/reject`, { comment })
+}
+
+export function offlineArticleApi(id, comment = '') {
+  return request.patch(`/articles/${id}/offline`, { comment })
+}
+
+export function getArticleReviewLogsApi(id) {
+  return request.get(`/articles/${id}/review-logs`)
+}

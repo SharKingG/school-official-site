@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { deleteArticleApi, getArticlesApi, updateArticleApi, updateArticleTopApi } from '../api/articles'
+import { approveArticleApi, deleteArticleApi, getArticlesApi, offlineArticleApi, rejectArticleApi, submitArticleReviewApi, updateArticleApi, updateArticleTopApi } from '../api/articles'
 import { getCategoryTreeApi } from '../api/categories'
 import { adminArticleToApi, apiArticleToAdmin, flattenCategoryTree } from '../api/adapters'
 
@@ -14,7 +14,7 @@ const props = defineProps({
 
 const keyword = ref('')
 const category = ref('')
-const status = ref('')
+const status = ref(props.scope === 'review' ? '待审核' : '')
 const articles = ref([])
 const categoryOptions = ref([])
 const loading = ref(false)
@@ -133,6 +133,45 @@ async function toggleTop(row) {
   await loadArticles()
 }
 
+async function submitReview(row) {
+  await submitArticleReviewApi(row.id, '管理员提交审核')
+  ElMessage.success('已提交审核')
+  await loadArticles()
+}
+
+function approveArticle(row) {
+  ElMessageBox.prompt(`请输入文章“${row.title}”的审核意见`, '审核通过', {
+    inputValue: '审核通过，同意发布',
+    inputType: 'textarea'
+  }).then(async ({ value }) => {
+    await approveArticleApi(row.id, value)
+    ElMessage.success('审核通过，文章已发布')
+    await loadArticles()
+  })
+}
+
+function rejectArticle(row) {
+  ElMessageBox.prompt(`请输入文章“${row.title}”的驳回原因`, '审核驳回', {
+    inputValue: '请修改后重新提交',
+    inputType: 'textarea'
+  }).then(async ({ value }) => {
+    await rejectArticleApi(row.id, value)
+    ElMessage.success('已驳回，文章退回草稿')
+    await loadArticles()
+  })
+}
+
+function offlineArticle(row) {
+  ElMessageBox.prompt(`请输入文章“${row.title}”的下线原因`, '文章下线', {
+    inputValue: '内容调整，暂时下线',
+    inputType: 'textarea'
+  }).then(async ({ value }) => {
+    await offlineArticleApi(row.id, value)
+    ElMessage.success('文章已下线')
+    await loadArticles()
+  })
+}
+
 function refresh() {
   loadArticles()
   ElMessage.success('已刷新')
@@ -193,13 +232,15 @@ onMounted(async () => {
             <span v-else>-</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" fixed="right" width="260">
+        <el-table-column label="操作" fixed="right" width="360">
           <template #default="{ row }">
             <el-button link type="primary" @click="openDialog(row, 'view')">查看</el-button>
             <el-button link type="primary" @click="openDialog(row, 'edit')">编辑</el-button>
-            <el-button v-if="scope === 'all'" link type="warning" @click="toggleTop(row)">
-              {{ row.isTop ? '取消置顶' : '置顶' }}
-            </el-button>
+            <el-button v-if="row.status === '草稿' || row.status === '已下架'" link type="warning" @click="submitReview(row)">提交审核</el-button>
+            <el-button v-if="row.status === '待审核'" link type="success" @click="approveArticle(row)">通过</el-button>
+            <el-button v-if="row.status === '待审核'" link type="danger" @click="rejectArticle(row)">驳回</el-button>
+            <el-button v-if="row.status === '已发布'" link type="warning" @click="offlineArticle(row)">下线</el-button>
+            <el-button v-if="scope === 'all'" link type="warning" @click="toggleTop(row)">{{ row.isTop ? '取消置顶' : '置顶' }}</el-button>
             <el-button link type="danger" @click="removeArticle(row)">删除</el-button>
           </template>
         </el-table-column>

@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcryptjs'
 import { PrismaService } from '../prisma/prisma.service'
 import { LoginDto } from './dto/login.dto'
+import { DEFAULT_ROLE_PERMISSIONS, parsePermissions } from '../common/permissions'
 
 @Injectable()
 export class AuthService {
@@ -10,6 +11,24 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService
   ) {}
+
+  private async getRoleInfo(roleCode: string) {
+    let roleName = roleCode
+    let permissions = DEFAULT_ROLE_PERMISSIONS[roleCode] || []
+
+    try {
+      const role = await this.prisma.role.findUnique({ where: { code: roleCode } })
+
+      if (role?.status === 'ENABLED') {
+        roleName = role.name
+        permissions = parsePermissions(role.permissions)
+      }
+    } catch (error) {
+      permissions = DEFAULT_ROLE_PERMISSIONS[roleCode] || []
+    }
+
+    return { roleName, permissions }
+  }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.adminUser.findUnique({
@@ -26,11 +45,14 @@ export class AuthService {
       throw new UnauthorizedException('账号或密码错误')
     }
 
+    const roleInfo = await this.getRoleInfo(user.role)
+
     const accessToken = await this.jwtService.signAsync({
       sub: user.id,
       username: user.username,
       role: user.role,
-      nickname: user.nickname
+      nickname: user.nickname,
+      permissions: roleInfo.permissions
     })
 
     return {
@@ -42,7 +64,9 @@ export class AuthService {
           id: user.id,
           username: user.username,
           nickname: user.nickname,
-          role: user.role
+          role: user.role,
+          roleName: roleInfo.roleName,
+          permissions: roleInfo.permissions
         }
       }
     }
@@ -65,10 +89,16 @@ export class AuthService {
       throw new UnauthorizedException('账号不存在')
     }
 
+    const roleInfo = await this.getRoleInfo(user.role)
+
     return {
       code: 0,
       message: '获取成功',
-      data: user
+      data: {
+        ...user,
+        roleName: roleInfo.roleName,
+        permissions: roleInfo.permissions
+      }
     }
   }
 }

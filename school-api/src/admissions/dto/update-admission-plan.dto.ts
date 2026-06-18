@@ -1,39 +1,39 @@
-import { IsNumber, IsOptional, IsString } from "class-validator";
+import { IsNumber, IsOptional, IsString } from 'class-validator'
 
 export class UpdateAdmissionPlanDto {
   @IsOptional()
   @IsString()
-  title?: string;
+  title?: string
 
   @IsOptional()
   @IsString()
-  description?: string;
+  description?: string
 
   @IsOptional()
   @IsString()
-  target?: string;
+  target?: string
 
   @IsOptional()
   @IsString()
-  startTime?: string | null;
+  startTime?: string | null
 
   @IsOptional()
   @IsString()
-  endTime?: string | null;
+  endTime?: string | null
 
   @IsOptional()
   @IsString()
-  contact?: string;
+  contact?: string
 
   @IsOptional()
   @IsString()
-  attachment?: string;
+  attachment?: string
 
   @IsOptional()
   @IsNumber()
-  sort?: number;
+  sort?: number
 
   @IsOptional()
   @IsString()
-  status?: string;
+  status?: string
 }

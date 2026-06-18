@@ -1,15 +1,15 @@
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator'
 
 export class QueryRecordDto {
   @IsString()
-  @IsNotEmpty({ message: "请输入姓名" })
-  name!: string;
+  @IsNotEmpty({ message: '请输入姓名' })
+  name!: string
 
   @IsOptional()
   @IsString()
-  idCard?: string;
+  idCard?: string
 
   @IsOptional()
   @IsString()
-  ticketNo?: string;
+  ticketNo?: string
 }

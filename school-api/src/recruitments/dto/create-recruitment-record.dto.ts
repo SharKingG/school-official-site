@@ -1,35 +1,35 @@
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator'
 
 export class CreateRecruitmentRecordDto {
   @IsString()
-  @IsNotEmpty({ message: "请输入姓名" })
-  applicantName!: string;
+  @IsNotEmpty({ message: '请输入姓名' })
+  applicantName!: string
 
   @IsOptional()
   @IsString()
-  gender?: string;
+  gender?: string
 
   @IsString()
-  @IsNotEmpty({ message: "请输入联系电话" })
-  phone!: string;
-
-  @IsOptional()
-  @IsString()
-  email?: string;
+  @IsNotEmpty({ message: '请输入联系电话' })
+  phone!: string
 
   @IsOptional()
   @IsString()
-  education?: string;
+  email?: string
 
   @IsOptional()
   @IsString()
-  major?: string;
+  education?: string
 
   @IsOptional()
   @IsString()
-  attachmentUrl?: string;
+  major?: string
 
   @IsOptional()
   @IsString()
-  remark?: string;
+  attachmentUrl?: string
+
+  @IsOptional()
+  @IsString()
+  remark?: string
 }

@@ -1,17 +1,17 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator'
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator'
 
-export class UpdateQueryProjectDto {
+export class UpdateRoleDto {
   @IsOptional()
   @IsString()
-  title?: string
+  name?: string
 
   @IsOptional()
   @IsString()
   description?: string
 
   @IsOptional()
-  @IsString()
-  queryFields?: string
+  @IsArray()
+  permissions?: string[]
 
   @IsOptional()
   @IsNumber()

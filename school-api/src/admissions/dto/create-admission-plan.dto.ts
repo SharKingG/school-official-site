@@ -1,39 +1,39 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator'
 
 export class CreateAdmissionPlanDto {
   @IsString()
-  @IsNotEmpty({ message: "请输入招生计划名称" })
-  title!: string;
+  @IsNotEmpty({ message: '请输入招生计划名称' })
+  title!: string
 
   @IsOptional()
   @IsString()
-  description?: string;
+  description?: string
 
   @IsOptional()
   @IsString()
-  target?: string;
+  target?: string
 
   @IsOptional()
   @IsString()
-  startTime?: string;
+  startTime?: string
 
   @IsOptional()
   @IsString()
-  endTime?: string;
+  endTime?: string
 
   @IsOptional()
   @IsString()
-  contact?: string;
+  contact?: string
 
   @IsOptional()
   @IsString()
-  attachment?: string;
+  attachment?: string
 
   @IsOptional()
   @IsNumber()
-  sort?: number;
+  sort?: number
 
   @IsOptional()
   @IsString()
-  status?: string;
+  status?: string
 }

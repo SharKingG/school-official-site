@@ -34,6 +34,28 @@ export function getAdminName() {
   return user.nickname || user.username || localStorage.getItem(NAME_KEY) || '管理员'
 }
 
+export function getRoleName() {
+  const user = getUser()
+  return user.roleName || user.role || '管理员'
+}
+
+export function getPermissions() {
+  const user = getUser()
+  return Array.isArray(user.permissions) ? user.permissions : []
+}
+
+export function hasPermission(permission) {
+  const user = getUser()
+  if (user.role === 'SUPER_ADMIN') return true
+  return getPermissions().includes(permission)
+}
+
+export function hasAnyPermission(permissions = []) {
+  const user = getUser()
+  if (user.role === 'SUPER_ADMIN') return true
+  return permissions.some((item) => getPermissions().includes(item))
+}
+
 export function clearAuth() {
   removeToken()
 }

@@ -1,47 +1,47 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator'
 
 export class CreateRecruitmentPlanDto {
   @IsString()
-  @IsNotEmpty({ message: "请输入招聘岗位名称" })
-  title!: string;
+  @IsNotEmpty({ message: '请输入招聘岗位名称' })
+  title!: string
 
   @IsOptional()
   @IsString()
-  department?: string;
+  department?: string
 
   @IsOptional()
   @IsNumber()
-  positionCount?: number;
+  positionCount?: number
 
   @IsOptional()
   @IsString()
-  description?: string;
+  description?: string
 
   @IsOptional()
   @IsString()
-  requirements?: string;
+  requirements?: string
 
   @IsOptional()
   @IsString()
-  startTime?: string;
+  startTime?: string
 
   @IsOptional()
   @IsString()
-  endTime?: string;
+  endTime?: string
 
   @IsOptional()
   @IsString()
-  contact?: string;
+  contact?: string
 
   @IsOptional()
   @IsString()
-  attachment?: string;
+  attachment?: string
 
   @IsOptional()
   @IsNumber()
-  sort?: number;
+  sort?: number
 
   @IsOptional()
   @IsString()
-  status?: string;
+  status?: string
 }

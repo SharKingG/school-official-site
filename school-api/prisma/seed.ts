@@ -1,14 +1,73 @@
 import { PrismaClient } from '@prisma/client'
 import * as bcrypt from 'bcryptjs'
 
+const permissions = {
+  all: [
+    'dashboard:view',
+    'category:manage',
+    'article:create',
+    'article:manage',
+    'article:review',
+    'banner:manage',
+    'link:manage',
+    'leader:manage',
+    'admission:manage',
+    'recruitment:manage',
+    'query:manage',
+    'file:manage',
+    'system:manage',
+    'log:view'
+  ],
+  content: ['dashboard:view', 'category:manage', 'article:create', 'article:manage', 'file:manage'],
+  admission: ['dashboard:view', 'admission:manage', 'file:manage'],
+  recruitment: ['dashboard:view', 'recruitment:manage', 'file:manage'],
+  query: ['dashboard:view', 'query:manage', 'file:manage'],
+  reviewer: ['dashboard:view', 'article:manage', 'article:review']
+}
+
+function jsonPermissions(items: string[]) {
+  return JSON.stringify(items)
+}
+
 const prisma = new PrismaClient()
 
 async function main() {
   const passwordHash = await bcrypt.hash('123456', 10)
 
+
+  const defaultRoles = [
+    { code: 'SUPER_ADMIN', name: '超级管理员', description: '拥有全部系统权限', permissions: permissions.all, sort: 1 },
+    { code: 'CONTENT_ADMIN', name: '内容管理员', description: '负责栏目和文章内容维护', permissions: permissions.content, sort: 2 },
+    { code: 'ADMISSION_ADMIN', name: '招生管理员', description: '负责招生计划和报名数据', permissions: permissions.admission, sort: 3 },
+    { code: 'RECRUITMENT_ADMIN', name: '招聘管理员', description: '负责招聘岗位和投递数据', permissions: permissions.recruitment, sort: 4 },
+    { code: 'QUERY_ADMIN', name: '查询管理员', description: '负责公共查询项目和查询结果', permissions: permissions.query, sort: 5 },
+    { code: 'REVIEWER', name: '文章审核员', description: '负责审核文章发布流程', permissions: permissions.reviewer, sort: 6 }
+  ]
+
+  for (const role of defaultRoles) {
+    await prisma.role.upsert({
+      where: { code: role.code },
+      update: {
+        name: role.name,
+        description: role.description,
+        permissions: jsonPermissions(role.permissions),
+        sort: role.sort,
+        status: 'ENABLED'
+      },
+      create: {
+        code: role.code,
+        name: role.name,
+        description: role.description,
+        permissions: jsonPermissions(role.permissions),
+        sort: role.sort,
+        status: 'ENABLED'
+      }
+    })
+  }
+
   const admin = await prisma.adminUser.upsert({
     where: { username: 'admin' },
-    update: {},
+    update: { role: 'SUPER_ADMIN', status: 'ENABLED' },
     create: {
       username: 'admin',
       passwordHash,
@@ -16,6 +75,27 @@ async function main() {
       role: 'SUPER_ADMIN'
     }
   })
+
+
+  const sampleUsers = [
+    { username: 'content', nickname: '内容管理员', role: 'CONTENT_ADMIN' },
+    { username: 'reviewer', nickname: '文章审核员', role: 'REVIEWER' },
+    { username: 'admission', nickname: '招生管理员', role: 'ADMISSION_ADMIN' }
+  ]
+
+  for (const item of sampleUsers) {
+    await prisma.adminUser.upsert({
+      where: { username: item.username },
+      update: { nickname: item.nickname, role: item.role, status: 'ENABLED' },
+      create: {
+        username: item.username,
+        passwordHash,
+        nickname: item.nickname,
+        role: item.role,
+        status: 'ENABLED'
+      }
+    })
+  }
 
   const categories = [
     { name: '集团动态', slug: 'campus', sort: 1 },
@@ -247,7 +327,23 @@ async function main() {
     })
   }
 
-  console.log('Seed completed. Admin account: admin / 123456')
+  const logExists = await prisma.operationLog.findFirst({ where: { module: '系统初始化', action: '初始化第十阶段权限角色' } })
+
+  if (!logExists) {
+    await prisma.operationLog.create({
+      data: {
+        userId: admin.id,
+        username: admin.username,
+        module: '系统初始化',
+        action: '初始化第十阶段权限角色',
+        targetType: 'system',
+        description: '初始化角色、权限、测试账号和操作日志',
+        result: 'SUCCESS'
+      }
+    })
+  }
+
+  console.log('Seed completed. Admin account: admin / 123456. Extra users: content/reviewer/admission / 123456')
 }
 
 main()
