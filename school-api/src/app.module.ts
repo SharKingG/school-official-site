@@ -8,6 +8,9 @@ import { BannersModule } from './banners/banners.module'
 import { LinksModule } from './links/links.module'
 import { LeadersModule } from './leaders/leaders.module'
 import { UploadsModule } from './uploads/uploads.module'
+import { AdmissionsModule } from './admissions/admissions.module'
+import { RecruitmentsModule } from './recruitments/recruitments.module'
+import { PublicQueryModule } from './public-query/public-query.module'
 
 @Module({
   imports: [
@@ -25,7 +28,10 @@ import { UploadsModule } from './uploads/uploads.module'
     BannersModule,
     LinksModule,
     LeadersModule,
-    UploadsModule
+    UploadsModule,
+    AdmissionsModule,
+    RecruitmentsModule,
+    PublicQueryModule
   ]
 })
 export class AppModule {}

@@ -1,0 +1,180 @@
+.empty-card,
+.business-card,
+.business-side {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.empty-card {
+  padding: 32px;
+  color: #666;
+}
+
+.business-layout {
+  display: grid;
+  grid-template-columns: 310px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.business-side {
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.business-plan-btn {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  background: #fff;
+  padding: 16px;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.business-plan-btn strong {
+  display: block;
+  color: #222;
+  line-height: 1.5;
+}
+
+.business-plan-btn span {
+  display: block;
+  margin-top: 8px;
+  color: #888;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.business-plan-btn:hover,
+.business-plan-btn.active {
+  border-color: #c60000;
+  background: #fff7f7;
+}
+
+.business-plan-btn.active strong {
+  color: #c60000;
+}
+
+.business-card {
+  padding: 28px;
+}
+
+.business-card h3 {
+  margin: 0 0 12px;
+  color: #c60000;
+  font-size: 24px;
+}
+
+.business-desc {
+  color: #666;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+
+.muted {
+  color: #888;
+  line-height: 1.7;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.form-grid label {
+  display: grid;
+  gap: 8px;
+  color: #333;
+  font-weight: 700;
+}
+
+.form-grid label.full {
+  grid-column: 1 / -1;
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 12px 14px;
+  outline: none;
+  font: inherit;
+  font-weight: 400;
+  color: #333;
+  background: #fff;
+}
+
+.form-grid input:focus,
+.form-grid select:focus,
+.form-grid textarea:focus {
+  border-color: #c60000;
+  box-shadow: 0 0 0 3px rgba(198, 0, 0, 0.08);
+}
+
+.submit-btn {
+  margin-top: 22px;
+  border: none;
+  border-radius: 999px;
+  background: #c60000;
+  color: #fff;
+  padding: 12px 30px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-message {
+  margin: 18px 0 0;
+  padding: 12px 16px;
+  border-left: 4px solid #c60000;
+  background: #fff7f7;
+  color: #9c0000;
+}
+
+.query-results {
+  margin-top: 28px;
+  border-top: 1px solid #eee;
+  padding-top: 22px;
+}
+
+.query-result-card {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 18px;
+  margin-top: 14px;
+  background: #fafafa;
+}
+
+.query-result-card strong {
+  display: block;
+  color: #c60000;
+  font-size: 18px;
+}
+
+.query-result-card p {
+  color: #555;
+  line-height: 1.8;
+}
+
+.query-result-card a {
+  color: #2c7edb;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .business-layout,
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

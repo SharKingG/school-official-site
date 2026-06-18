@@ -44,7 +44,7 @@ model AdminUser {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
-  articles     Article[]   @relation("ArticleCreator")
+  articles Article[] @relation("ArticleCreator")
 
   @@map("admin_users")
 }
@@ -61,9 +61,9 @@ model Category {
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
-  parent    Category?      @relation("CategoryTree", fields: [parentId], references: [id])
-  children  Category[]     @relation("CategoryTree")
-  articles  Article[]
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  articles Article[]
 
   @@index([parentId])
   @@map("categories")
@@ -92,9 +92,9 @@ model Article {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  category    Category      @relation(fields: [categoryId], references: [id])
-  creator     AdminUser?    @relation("ArticleCreator", fields: [creatorId], references: [id])
-  files       ArticleFile[]
+  category Category      @relation(fields: [categoryId], references: [id])
+  creator  AdminUser?    @relation("ArticleCreator", fields: [creatorId], references: [id])
+  files    ArticleFile[]
 
   @@index([categoryId])
   @@index([status])
@@ -111,7 +111,7 @@ model ArticleFile {
   fileSize  Int      @default(0)
   createdAt DateTime @default(now())
 
-  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
   @@index([articleId])
   @@map("article_files")
@@ -180,4 +180,128 @@ model UploadFile {
 
   @@index([module])
   @@map("upload_files")
+}
+
+model AdmissionPlan {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String?      @db.LongText
+  target      String?      @db.VarChar(200)
+  startTime   DateTime?
+  endTime     DateTime?
+  contact     String?      @db.VarChar(200)
+  attachment  String?      @db.VarChar(500)
+  sort        Int          @default(0)
+  status      CommonStatus @default(ENABLED)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  records AdmissionRecord[]
+
+  @@index([status])
+  @@map("admission_plans")
+}
+
+model AdmissionRecord {
+  id          Int      @id @default(autoincrement())
+  planId      Int
+  studentName String
+  gender      String?  @db.VarChar(20)
+  idCard      String   @db.VarChar(50)
+  phone       String   @db.VarChar(50)
+  school      String?  @db.VarChar(200)
+  grade       String?  @db.VarChar(100)
+  score       String?  @db.VarChar(100)
+  remark      String?  @db.Text
+  status      String   @default("SUBMITTED")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  plan AdmissionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId])
+  @@index([studentName])
+  @@index([idCard])
+  @@map("admission_records")
+}
+
+model RecruitmentPlan {
+  id            Int          @id @default(autoincrement())
+  title         String
+  department    String?      @db.VarChar(200)
+  positionCount Int          @default(1)
+  description   String?      @db.LongText
+  requirements  String?      @db.LongText
+  startTime     DateTime?
+  endTime       DateTime?
+  contact       String?      @db.VarChar(200)
+  attachment    String?      @db.VarChar(500)
+  sort          Int          @default(0)
+  status        CommonStatus @default(ENABLED)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  records RecruitmentRecord[]
+
+  @@index([status])
+  @@map("recruitment_plans")
+}
+
+model RecruitmentRecord {
+  id            Int      @id @default(autoincrement())
+  planId        Int
+  applicantName String
+  gender        String?  @db.VarChar(20)
+  phone         String   @db.VarChar(50)
+  email         String?  @db.VarChar(200)
+  education     String?  @db.VarChar(100)
+  major         String?  @db.VarChar(200)
+  attachmentUrl String?  @db.VarChar(500)
+  remark        String?  @db.Text
+  status        String   @default("SUBMITTED")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  plan RecruitmentPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId])
+  @@index([applicantName])
+  @@map("recruitment_records")
+}
+
+model QueryProject {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String?      @db.Text
+  queryFields String       @default("name,idCard") @db.VarChar(200)
+  sort        Int          @default(0)
+  status      CommonStatus @default(ENABLED)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  records QueryRecord[]
+
+  @@index([status])
+  @@map("query_projects")
+}
+
+model QueryRecord {
+  id            Int      @id @default(autoincrement())
+  projectId     Int
+  name          String
+  idCard        String?  @db.VarChar(50)
+  ticketNo      String?  @db.VarChar(100)
+  resultTitle   String
+  resultContent String?  @db.LongText
+  fileUrl       String?  @db.VarChar(500)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  project QueryProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([name])
+  @@index([idCard])
+  @@index([ticketNo])
+  @@map("query_records")
 }
